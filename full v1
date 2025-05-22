@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memorandum Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style id="memo-styles">
+        /* General body styling for a clean background and centering */
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5; /* Light grey background for a soft feel */
+            display: flex;
+            flex-direction: column; /* Arrange items vertically */
+            justify-content: flex-start;
+            align-items: center; /* Align to top for longer documents */
+            min-height: 100vh; /* Ensures the background covers the whole viewport */
+            color: #333; /* Default text color */
+            line-height: 1.6; /* Improved readability */
+        }
+
+        /* Input form styling */
+        .input-form {
+            background-color: #ffffff;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            width: 100%;
+            max-width: 600px; /* Slightly narrower than memo for input */
+            padding: 30px;
+            box-sizing: border-box;
+            margin-bottom: 30px; /* Space between form and memo */
+        }
+
+        .input-form label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #424242;
+        }
+
+        .input-form input[type="text"],
+        .input-form textarea {
+            width: calc(100% - 20px); /* Account for padding */
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+        }
+
+        .input-form textarea {
+            resize: vertical; /* Allow vertical resizing */
+            min-height: 100px; /* Minimum height for content */
+        }
+
+        .input-form .button-group {
+            display: flex; /* Arrange buttons horizontally */
+            gap: 15px; /* Space between buttons */
+            margin-top: 20px;
+        }
+
+        .input-form button {
+            background-color: #4285F4; /* Material Blue */
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+
+        .input-form button:hover {
+            background-color: #3367D6; /* Darker blue on hover */
+        }
+
+        #copyStatus {
+            margin-left: 10px;
+            color: #4CAF50; /* Green for success */
+            font-weight: 500;
+            visibility: hidden; /* Hidden by default */
+        }
+
+        /* Memo display area */
+        #memoOutput {
+            width: 100%;
+            max-width: 800px; /* Max width to prevent content from stretching too wide */
+            background-color: #ffffff; /* White background for the memo content */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Subtle shadow for elevation */
+            border-radius: 8px; /* Rounded corners for a modern look */
+            padding: 30px;
+            box-sizing: border-box; /* Include padding in element's total width and height */
+            margin-bottom: 50px; /* Space from bottom of page */
+        }
+
+        /* Memorandum Styling (copied from your provided CSS) */
+        .memo-container {
+            background-color: #ffffff; /* White background for the memo content */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Subtle shadow for elevation */
+            border-radius: 8px; /* Rounded corners for a modern look */
+            width: 100%;
+            max-width: 800px; /* Max width to prevent content from stretching too wide */
+            padding: 30px;
+            box-sizing: border-box; /* Include padding in element's total width and height */
+            margin: 20px auto; /* Add vertical margin and auto horizontal margin for centering */
+        }
+
+        .header {
+            border-bottom: 2px solid #e0e0e0; /* Light grey bottom border as a separator */
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            text-align: center; /* Center align the header text */
+        }
+
+        .header h1 {
+            font-weight: 500; /* Medium weight for the main title */
+            color: #424242; /* Darker grey for heading */
+            margin: 0;
+            font-size: 28px;
+            letter-spacing: 0.5px; /* Slightly increased letter spacing for title */
+        }
+
+        .header p {
+            color: #757575; /* Medium grey for subtitle/tagline */
+            margin: 5px 0 0;
+            font-size: 16px;
+        }
+
+        /* Metadata section (To, From, Date, Ref) */
+        .metadata {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* Two columns for metadata */
+            gap: 15px; /* Space between grid items */
+            margin-bottom: 25px;
+        }
+
+        .metadata div {
+            display: flex;
+            align-items: center; /* Vertically align content */
+        }
+
+        .metadata span {
+            color: #616161; /* Slightly lighter grey for values */
+        }
+
+        /* Subject line styling */
+        .subject {
+            font-size: 20px;
+            font-weight: 500;
+            color: #212121; /* Even darker grey for subject for emphasis */
+            margin-bottom: 20px;
+            padding-left: 15px; /* Indent for visual separation */
+            border-left: 4px solid #4285F4; /* Material Blue accent bar */
+            border-radius: 2px; /* Slight rounding on the accent bar */
+        }
+
+        /* Main content area */
+        .content p {
+            margin-bottom: 15px; /* Space between paragraphs */
+            text-align: justify; /* Justify text for a clean block look */
+        }
+
+        .content ul {
+            list-style-type: disc; /* Standard disc bullets */
+            padding-left: 25px; /* Indent for list items */
+            margin-bottom: 15px;
+        }
+
+        .content ul li {
+            margin-bottom: 8px; /* Space between list items */
+        }
+
+        /* Signature block */
+        .signature {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0; /* Light grey top border */
+        }
+
+        .signature p {
+            margin: 5px 0; /* Space between signature lines */
+            color: #424242;
+        }
+    </style>
+</head>
+<body>
+    <div class="input-form">
+        <h2>Memorandum Details</h2>
+        <label for="recipient">TO:</label>
+        <input type="text" id="recipient" value="[Recipient Name]"><br>
+
+        <label for="from">FROM:</label>
+        <input type="text" id="from" value="[Your Name or Title]"><br>
+
+        <label for="date">DATE:</label>
+        <input type="text" id="date" value="May 21, 2025"><br>
+
+        <label for="ref">REF:</label>
+        <input type="text" id="ref" value="[Reference #]"><br>
+
+        <label for="subject">SUBJECT:</label>
+        <input type="text" id="subject" value="[Subject of Memo]"><br>
+
+        <label for="content">CONTENT:</label>
+        <textarea id="content">[Type your memorandum content here. You can use multiple paragraphs, and even simple HTML tags like &lt;ul&gt;&lt;li&gt;List Item&lt;/li&gt;&lt;/ul&gt; for more complex formatting.]</textarea><br>
+
+        <label for="closing">CLOSING:</label>
+        <input type="text" id="closing" value="Sincerely,"><br>
+
+        <label for="yourName">YOUR NAME (for signature):</label>
+        <input type="text" id="yourName" value="[Your Name]"><br>
+
+        <label for="yourTitle">YOUR TITLE (for signature):</label>
+        <input type="text" id="yourTitle" value="[Your Title]"><br>
+
+        <div class="button-group">
+            <button onclick="generateMemo()">Generate Memorandum</button>
+            <button onclick="copyMemoHTML()">Copy HTML</button>
+            <span id="copyStatus">Copied!</span>
+        </div>
+    </div>
+
+    <div id="memoOutput">
+        <p>Click "Generate Memorandum" to see your memo here!</p>
+    </div>
+
+    <script>
+        function getMemoContentHTML() {
+            // Get values from input fields
+            const recipient = document.getElementById('recipient').value;
+            const from = document.getElementById('from').value;
+            const date = document.getElementById('date').value;
+            const ref = document.getElementById('ref').value;
+            const subject = document.getElementById('subject').value;
+            const content = document.getElementById('content').value;
+            const closing = document.getElementById('closing').value;
+            const yourName = document.getElementById('yourName').value;
+            const yourTitle = document.getElementById('yourTitle').value;
+
+            // Construct the memorandum HTML using template literals
+            // We use .map and .join to correctly format paragraphs from the textarea
+            const memoContent = `
+                <div class="memo-container">
+                    <div class="header">
+                        <h1>COMMUNICATIONS MEMORANDUM</h1>
+                        <p>Internal Document - Confidential</p>
+                    </div>
+
+                    <div class="metadata">
+                        <div>
+                            <strong>TO:</strong> <span>${recipient}</span>
+                        </div>
+                        <div>
+                            <strong>FROM:</strong> <span>${from}</span>
+                        </div>
+                        <div>
+                            <strong>DATE:</strong> <span>${date}</span>
+                        </div>
+                        <div>
+                            <strong>REF:</strong> <span>${ref}</span>
+                        </div>
+                    </div>
+
+                    <div class="subject">
+                      <p>Subject: ${subject}</p>
+                    </div>
+
+                    <div class="content">
+                      ${content.split('\n').map(p => `<p>${p}</p>`).join('\n')}
+                    </div>
+
+                    <div class="signature">
+                        <p>${closing}</p>
+                        <p><strong>${yourName}</strong></p>
+                        <p>${yourTitle}</p>
+                    </div>
+                </div>
+            `;
+            return memoContent;
+        }
+
+
+        function generateMemo() {
+            document.getElementById('memoOutput').innerHTML = getMemoContentHTML();
+        }
+
+        async function copyMemoHTML() {
+            const memoContentHTML = getMemoContentHTML();
+            const memoStyles = document.getElementById('memo-styles').innerHTML;
+
+            const fullHTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Communications Memorandum</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+${memoStyles}
+    </style>
+</head>
+<body>
+    ${memoContentHTML}
+</body>
+</html>`;
+
+            try {
+                await navigator.clipboard.writeText(fullHTML);
+                const statusSpan = document.getElementById('copyStatus');
+                statusSpan.textContent = 'Copied!';
+                statusSpan.style.color = '#4CAF50'; // Green for success
+                statusSpan.style.visibility = 'visible';
+                setTimeout(() => {
+                    statusSpan.style.visibility = 'hidden';
+                }, 3000); // Hide after 3 seconds
+            } catch (err) {
+                console.error('Failed to copy: ', err);
+                const statusSpan = document.getElementById('copyStatus');
+                statusSpan.textContent = 'Failed to copy!';
+                statusSpan.style.color = '#F44336'; // Red for error
+                statusSpan.style.visibility = 'visible';
+                setTimeout(() => {
+                    statusSpan.style.visibility = 'hidden';
+                }, 3000); // Hide after 3 seconds
+            }
+        }
+
+        // Set today's date as default for the date input
+        window.onload = function() {
+            const today = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('date').value = today.toLocaleDateString('en-US', options);
+        };
+    </script>
+</body>
+</html>
